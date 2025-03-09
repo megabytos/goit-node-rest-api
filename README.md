@@ -1,1 +1,1 @@
-# goit-node-rest-api
+# Node.js Development HW2 - REST API
