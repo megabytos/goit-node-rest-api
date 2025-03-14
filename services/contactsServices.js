@@ -5,12 +5,12 @@ export async function listContacts() {
 }
 
 export async function getContactById(contactId) {
-    return await Contact.findByPk(contactId) || null;
+    return await Contact.findByPk(contactId);
 }
 
 export async function removeContact(contactId) {
     const contact = await getContactById(contactId);
-    if (!contact)   return null;
+    if (!contact) return null;
     await contact.destroy();
     return contact;
 }
@@ -22,5 +22,5 @@ export async function addContact(data) {
 export async function updateContactById(contactId, data) {
     const contact = await getContactById(contactId);
     if (!contact) return null;
-    return contact.update(data, { returning: true });
+    return contact.update(data, {returning: true});
 }
