@@ -1,4 +1,4 @@
-import {addUser, loginUser, logoutUser, updateUser} from "../services/authServices.js";
+import {addUser, loginUser, logoutUser, updateAvatar, updateUser} from "../services/authServices.js";
 
 export const register = async (req, res) => {
     const {email, subscription} = await addUser(req.body);
@@ -27,4 +27,10 @@ export const subscription = async (req, res) => {
     const {id} = req.user;
     const {email, subscription} = await updateUser(id, req.body);
     res.status(200).json({email, subscription});
+}
+
+export const avatar = async (req, res) => {
+    const {id} = req.user;
+    const {avatarURL} = await updateAvatar(id, req.file);
+    res.status(200).json({avatarURL});
 }
