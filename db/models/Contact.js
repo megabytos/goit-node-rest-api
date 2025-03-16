@@ -1,5 +1,6 @@
 import {DataTypes} from "sequelize";
 import sequelize from "../sequelize.js";
+import {phoneRegexp} from "../../constants/regexp.js";
 
 const Contact = sequelize.define(
     "contact", {
@@ -7,14 +8,11 @@ const Contact = sequelize.define(
             type: DataTypes.STRING,
             allowNull: false,
             validate: {
-                isAlpha: {
-                    msg: "name must contain only letters"
-                },
                 notNull: {
-                    msg: "name must exist"
+                    msg: "Name must exist"
                 },
                 notEmpty: {
-                    msg: "name cannot be empty"
+                    msg: "Name cannot be empty"
                 }
             }
         },
@@ -30,7 +28,7 @@ const Contact = sequelize.define(
             allowNull: false,
             validate: {
                 is: {
-                    args: [/^\(\d{3}\) \d{3}-\d{4}$/],
+                    args: [phoneRegexp],
                     msg: "Phone must be digits in the format (XXX) XXX-XXXX"
                 }
 
@@ -40,8 +38,12 @@ const Contact = sequelize.define(
             type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
+        owner: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        }
     });
 
-//Contact.sync({alter: true});
+//Contact.sync({force: true});
 
 export default Contact;

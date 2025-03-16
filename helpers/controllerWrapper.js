@@ -7,6 +7,9 @@ const controllerWrapper = ctrl => {
         } catch (error) {
             if (error instanceof ValidationError) {
                 error.status = 400;
+                if (error.name === "SequelizeUniqueConstraintError") {
+                    error.status = 409;
+                }
             }
             next(error)
         }

@@ -1,4 +1,4 @@
-# Node.js Development HW3 - Sequelize ORM
+# Node.js Development HW4 - JWT authentication and authorization
 
 Node.js REST API for CRUD managing contacts. 
 
