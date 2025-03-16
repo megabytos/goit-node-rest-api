@@ -19,7 +19,7 @@ const auth = async (req, res, next) => {
         }
         req.user = user;
     } catch (err) {
-        return next(HttpError(401, err.message));
+        return next(HttpError(err.status, err.message));
     }
     next();
 }
