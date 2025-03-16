@@ -6,6 +6,8 @@ import gravatar from "gravatar";
 import path from "node:path";
 import fs from "fs/promises";
 import {avatarsDir, avatarsPath} from "../middlewares/upload.js";
+import {sendVerificationEmail} from "../helpers/sendMail.js";
+import {nanoid} from "nanoid";
 
 const {JWT_SECRET} = process.env;
 
@@ -13,8 +15,8 @@ export async function getUserById(userId) {
     return await User.findByPk(userId);
 }
 
-export async function getUserByEmail(email) {
-    return await User.findOne({where: {email}});
+export async function getUser(query) {
+    return await User.findOne({where: query});
 }
 
 export async function addUser(data) {
@@ -22,20 +24,26 @@ export async function addUser(data) {
     if (!email) {
         throw HttpError(400, `Email is empty`);
     }
-    const user = await getUserByEmail(email);
-    if (user) {
+    const existedUser = await getUser({email});
+    if (existedUser) {
         throw HttpError(409, `Email in use`);
     }
     const avatarURL = gravatar.url(email, {protocol: "https", s: "200", d: "retro"});
     const hashedPassword = password && await bcrypt.hash(password, 10);
-    return await User.create({...data, password: hashedPassword, avatarURL});
+    const verificationToken = nanoid();
+    const newUser = await User.create({...data, password: hashedPassword, avatarURL, verificationToken});
+    await sendVerificationEmail(email, verificationToken);
+    return newUser;
 }
 
 export async function loginUser(data) {
     const {email, password} = data;
-    const user = await getUserByEmail(email);
+    const user = await getUser({email});
     if (!user) {
         throw HttpError(401, "Email or password is wrong");
+    }
+    if (!user.verify) {
+        throw HttpError(401, "Email is not verify");
     }
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
@@ -58,7 +66,7 @@ export async function updateUser(userId, data) {
     return user.update(data, {returning: true});
 }
 
-export const updateAvatar = async (userId, file) => {
+export async function updateAvatar(userId, file) {
     if (!file) {
         throw HttpError(400, "No attached file");
     }
@@ -72,4 +80,22 @@ export const updateAvatar = async (userId, file) => {
         return HttpError(500, "File upload error");
     }
     return await updateUser(userId, {avatarURL: avatarPath});
-};
+}
+
+export async function verifyUser(verificationToken) {
+    const user = await getUser({verificationToken});
+    if (!user) {
+        throw HttpError(404, "User not found or already verified");
+    }
+    user.update({verificationToken: null, verify: true}, {returning: true});
+    return {message: "Email verified successfully"};
+}
+
+export const resendVerificationEmail = async (email) => {
+    const user = await getUser({email});
+    if (!user || user.verify) {
+        throw HttpError(400, "User not found or already verified");
+    }
+    await sendVerificationEmail(email, user.verificationToken);
+    return {message: "Verification email sent"};
+}

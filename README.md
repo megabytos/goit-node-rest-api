@@ -1,4 +1,4 @@
-# Node.js Development HW5 - files handling
+# Node.js Development HW6 - mailing
 
 Node.js REST API for CRUD managing contacts. 
 
