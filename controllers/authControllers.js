@@ -1,4 +1,4 @@
-import {addUser, loginUser, logoutUser, updateAvatar, updateUser} from "../services/authServices.js";
+import {addUser, loginUser, logoutUser, resendVerificationEmail, updateAvatar, updateUser, verifyUser} from "../services/authServices.js";
 
 export const register = async (req, res) => {
     const {email, subscription} = await addUser(req.body);
@@ -33,4 +33,16 @@ export const avatar = async (req, res) => {
     const {id} = req.user;
     const {avatarURL} = await updateAvatar(id, req.file);
     res.status(200).json({avatarURL});
+}
+
+export const verify = async (req, res) => {
+    const {verificationToken} = req.params;
+    const {message} = await verifyUser(verificationToken);
+    res.status(200).json({message});
+}
+
+export const resend = async (req, res) => {
+    const {email} = req.body;
+    const {message} = await resendVerificationEmail(email);
+    res.status(200).json({message});
 }
